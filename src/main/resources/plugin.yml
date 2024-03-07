@@ -1,0 +1,10 @@
+name: ActiveTowns
+version: '${project.version}'
+main: me.youhavetrouble.activetowns.ActiveTowns
+description: Towny plugin for removing towns with no active residents
+api-version: '1.20'
+folia-supported: true
+authors:
+  - YouHaveTrouble
+depend:
+  - Towny
