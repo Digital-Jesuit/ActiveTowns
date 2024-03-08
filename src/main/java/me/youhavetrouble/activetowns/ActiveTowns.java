@@ -15,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,12 +87,21 @@ public final class ActiveTowns extends JavaPlugin implements Listener {
         });
     }
 
-    public void makeTownImmuneFromDeletion(Town town, boolean immune) {
-        if (!town.hasMeta("safeFromDeletion")) {
-            town.addMetaData(safeFromDeletionMeta, true);
+    public void makeTownImmuneFromDeletion(@NotNull Town town, boolean immune) {
+        if (!town.hasMeta(safeFromDeletionMeta.getKey())) {
+            town.addMetaData(safeFromDeletionMeta);
         }
-        if (!(town.getMetadata(safeFromDeletionMeta.getKey()) instanceof BooleanDataField booleanDataField)) return;
+        if (!(town.getMetadata(safeFromDeletionMeta.getKey()) instanceof BooleanDataField booleanDataField)) {
+            return; // not boolean data. Corrupted tag?
+        }
         booleanDataField.setValue(immune);
+        town.save();
+    }
+
+    public boolean getTownImmuneFromDeletion(@NotNull Town town) {
+        if (!town.hasMeta(safeFromDeletionMeta.getKey())) return false;
+        if (!(town.getMetadata(safeFromDeletionMeta.getKey()) instanceof BooleanDataField booleanDataField)) return false;
+        return booleanDataField.getValue();
     }
 
     public int getDaysInactive() {
