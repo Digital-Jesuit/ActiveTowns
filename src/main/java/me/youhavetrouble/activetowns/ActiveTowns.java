@@ -3,10 +3,12 @@ package me.youhavetrouble.activetowns;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.TownySettings;
 import com.palmergames.bukkit.towny.event.time.dailytaxes.NewDayTaxAndUpkeepPreCollectionEvent;
+import com.palmergames.bukkit.towny.exceptions.KeyAlreadyRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownyWorld;
+import com.palmergames.bukkit.towny.object.metadata.BooleanDataField;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -22,8 +24,17 @@ public final class ActiveTowns extends JavaPlugin implements Listener {
 
     private int daysInactive = 14;
 
+    public final BooleanDataField safeFromDeletionMeta = new BooleanDataField("safeFromDeletion", false, "Is town safe from automatic deletion");
+
     @Override
     public void onEnable() {
+        try {
+            TownyAPI.getInstance().registerCustomDataField(safeFromDeletionMeta);
+        } catch (KeyAlreadyRegisteredException e) {
+            getLogger().severe("Could not register town metadata key. Disabling to prevent deleting towns marked as safe.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getCommandMap().register("activetowns", new ActiveTownsCommand(this));
     }
@@ -45,6 +56,8 @@ public final class ActiveTowns extends JavaPlugin implements Listener {
             getServer().getAsyncScheduler().runNow(this, (task -> {
                 List<Town> townsToRemove = new ArrayList<>();
                 for (Town town : townyWorld.getTowns().values()) {
+                    if (!(town.getMetadata(safeFromDeletionMeta.getKey()) instanceof BooleanDataField isSafe)) continue; // invalid meta?
+                    if (isSafe.getValue()) continue;
                     if (town.getResidents().isEmpty()) {
                         townsToRemove.add(town);
                         continue;
@@ -71,6 +84,14 @@ public final class ActiveTowns extends JavaPlugin implements Listener {
                 });
             }));
         });
+    }
+
+    public void makeTownImmuneFromDeletion(Town town, boolean immune) {
+        if (!town.hasMeta("safeFromDeletion")) {
+            town.addMetaData(safeFromDeletionMeta, true);
+        }
+        if (!(town.getMetadata(safeFromDeletionMeta.getKey()) instanceof BooleanDataField booleanDataField)) return;
+        booleanDataField.setValue(immune);
     }
 
     public int getDaysInactive() {
