@@ -2,7 +2,6 @@ package me.youhavetrouble.activetowns;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.metadata.BooleanDataField;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -64,8 +63,8 @@ public class ActiveTownsCommand extends Command {
                 return true;
             }
         }
-
-        return false;
+        sender.sendMessage(getUsage());
+        return true;
     }
 
     @Override
@@ -99,19 +98,16 @@ public class ActiveTownsCommand extends Command {
             player.sendMessage(Component.text("Not standing in a town"));
             return;
         }
-        if (!(town.getMetadata(plugin.safeFromDeletionMeta.getKey()) instanceof BooleanDataField booleanDataField)) {
-            player.sendMessage("Invalid metadata. Corrupted?");
-            return;
-        }
+
         if (safe == null) {
-            if (booleanDataField.getValue()) {
+            if (plugin.getTownImmuneFromDeletion(town)) {
                 player.sendMessage(Component.text("Town you're standing in is currently protected from automatic deletion."));
                 return;
             }
             player.sendMessage(Component.text("Town you're standing in is currently NOT protected from automatic deletion."));
             return;
         }
-        booleanDataField.setValue(safe);
+        plugin.makeTownImmuneFromDeletion(town, safe);
         if (safe) {
             player.sendMessage(Component.text("Town %s is now protected from automatic deletion".formatted(town.getName())));
         } else {
