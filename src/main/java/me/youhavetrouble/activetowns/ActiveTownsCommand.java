@@ -32,7 +32,7 @@ public class ActiveTownsCommand extends Command {
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("activetowns.command.reload")) {
-                plugin.reloadConfig();
+                plugin.reloadPlugin();
                 sender.sendMessage(Component.text("ActiveTowns reloaded. Now set to %s days".formatted(plugin.getDaysInactive())));
                 return true;
             }
