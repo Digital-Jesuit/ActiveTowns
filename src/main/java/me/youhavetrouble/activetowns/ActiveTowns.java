@@ -36,11 +36,12 @@ public final class ActiveTowns extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        reloadPlugin();
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getCommandMap().register("activetowns", new ActiveTownsCommand(this));
     }
 
-    private void reloadPlugin() {
+    public void reloadPlugin() {
         saveDefaultConfig();
         reloadConfig();
         this.daysInactive = Math.max(0, getConfig().getInt("days-inactive-to-remove", 14));
